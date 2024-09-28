@@ -6,7 +6,7 @@ import javax.swing.*;
 
 
 
-public class FlappyBird extends JPanel{
+public class FlappyBird extends JPanel implements ActionListener{
 
     int boardWidth = 360;
     int boardHeight = 640;
@@ -17,8 +17,31 @@ public class FlappyBird extends JPanel{
     Image birdImg;
     Image topPipeImg;
     Image bottomPipeImg;
-    
 
+    // Bird variables 
+
+    int birdX = boardWidth/8;
+    int birdY = boardHeight/2;
+    int birdWidth = 34;
+    int birdHeight = 24;
+
+    class Bird {
+        int x = birdX;
+        int y = birdY;
+        int width = birdWidth;
+        int height = birdHeight;
+        Image img;
+
+        Bird(Image img) {
+            this.img =img;
+        }
+
+    }
+// game logic
+    Bird bird;
+    int velocityY= -6;
+
+    Timer gameLoop;
     
 
     FlappyBird(){
@@ -32,6 +55,12 @@ public class FlappyBird extends JPanel{
         topPipeImg = new ImageIcon(getClass().getResource("./toppipe.png")).getImage();
         bottomPipeImg = new ImageIcon(getClass().getResource("./bottompipe.png")).getImage();
 
+        bird = new Bird(birdImg);
+
+        //  game timer
+        gameLoop = new Timer(1000/144,this);
+        gameLoop.start();
+
 
 }
 
@@ -43,8 +72,25 @@ public void paintComponent( Graphics g){
 }
 
 public void draw(Graphics g){
+    //System.out.println(1);  test if draw command repeats 
     //background of game
-    g.drawImage(backGroundImg,0,0,boardWidth,boardHeight,null);
+    g.drawImage(backGroundImg,0,0,boardWidth,boardHeight,null); // draw always starts from the top left corner then to the bottom right
+    g.drawImage(birdImg,bird.x,bird.y,bird.width,bird.height,null);
+}
+
+public void move(){
+    //bird
+    bird.y += velocityY;
+    bird.y = Math.max(bird.y,0);
+
+
+}
+
+@Override
+public void actionPerformed(ActionEvent e) {
+    move();
+    repaint();
+    
 }
 
     
