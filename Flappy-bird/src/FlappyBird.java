@@ -4,24 +4,22 @@ import java.util.ArrayList;
 import java.util.Random;
 import javax.swing.*;
 
-
-
-public class FlappyBird extends JPanel implements ActionListener{
+public class FlappyBird extends JPanel implements ActionListener, KeyListener {
 
     int boardWidth = 360;
     int boardHeight = 640;
 
-    //Images
+    // Images
 
     Image backGroundImg;
     Image birdImg;
     Image topPipeImg;
     Image bottomPipeImg;
 
-    // Bird variables 
+    // Bird variables
 
-    int birdX = boardWidth/8;
-    int birdY = boardHeight/2;
+    int birdX = boardWidth / 8;
+    int birdY = boardHeight / 2;
     int birdWidth = 34;
     int birdHeight = 24;
 
@@ -33,68 +31,145 @@ public class FlappyBird extends JPanel implements ActionListener{
         Image img;
 
         Bird(Image img) {
-            this.img =img;
+            this.img = img;
         }
 
     }
-// game logic
+
+    // pipes
+
+    int pipeX = boardWidth;
+    int pipeY = 0;
+    int pipeWidth = 64;
+    int pipeHeight = 512;
+
+    class Pipe {
+        int x = pipeX;
+        int y = pipeY;
+        int width = pipeWidth;
+        int height = pipeHeight;
+        Image img;
+        boolean passed = false;
+
+        Pipe(Image img) {
+            this.img = img;
+        }
+
+    }
+
+    // game logic
     Bird bird;
-    int velocityY= -9;
+    int velocityX = -4; // a movement along the x plane of the pipes simulates movement in the opposite
+    // direction for the bird
+    int velocityY = 0;
     int gravity = 1;
 
+    ArrayList<Pipe> pipes;
+    Random random = new Random();
+
+    Timer placePipesTimer;
+
     Timer gameLoop;
-    
 
-    FlappyBird(){
-        setPreferredSize(new Dimension(boardWidth,boardHeight));
+    FlappyBird() {
+        setPreferredSize(new Dimension(boardWidth, boardHeight));
 
+        setFocusable(true);
+        addKeyListener(this);
 
-        //assigns images to their variables and loads them 
+        // assigns images to their variables and loads them
 
         backGroundImg = new ImageIcon(getClass().getResource("./flappybirdbg.png")).getImage();
         birdImg = new ImageIcon(getClass().getResource("./flappybird.png")).getImage();
         topPipeImg = new ImageIcon(getClass().getResource("./toppipe.png")).getImage();
         bottomPipeImg = new ImageIcon(getClass().getResource("./bottompipe.png")).getImage();
 
+        // bird
         bird = new Bird(birdImg);
+        pipes = new ArrayList<Pipe>();
 
-        //  game timer
-        gameLoop = new Timer(1000/144,this);
+        // place pipes timer
+        placePipesTimer = new Timer(1500, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                placePipes();
+            }
+        });
+        placePipesTimer.start();
+
+        // game timer
+        gameLoop = new Timer(1000 / 60, this);
         gameLoop.start();
 
+    }
 
-}
+    public void placePipes() {
+        int randomPipeY = (int) (pipeY-pipeHeight/4 - Math.random()*pipeHeight/2);
+        Pipe topPipe = new Pipe(topPipeImg);
+        topPipe.y = randomPipeY;
+        pipes.add(topPipe);
+    }
 
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        draw(g);
 
-public void paintComponent( Graphics g){
-    super.paintComponent(g);
-    draw(g);
+    }
 
-}
+    public void draw(Graphics g) {
+        // System.out.println(1); test if draw command repeats
+        // background of game
+        g.drawImage(backGroundImg, 0, 0, boardWidth, boardHeight, null); // draw always starts from the top left corner
+                                                                         // then to the bottom right
 
-public void draw(Graphics g){
-    //System.out.println(1);  test if draw command repeats 
-    //background of game
-    g.drawImage(backGroundImg,0,0,boardWidth,boardHeight,null); // draw always starts from the top left corner then to the bottom right
-    g.drawImage(birdImg,bird.x,bird.y,bird.width,bird.height,null);
-}
+        // bird image
+        g.drawImage(birdImg, bird.x, bird.y, bird.width, bird.height, null);
 
-public void move(){
-    //bird
-    velocityY += gravity;
-    bird.y += velocityY;
+        // pipes
+        for (int i = 0; i < pipes.size(); i++) {
+            Pipe pipe = pipes.get(i);
+            g.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height, null);
+        }
 
-    bird.y = Math.max(bird.y,0);
+    }
 
+    public void move() {
+        // bird
+        velocityY += gravity;
+        bird.y += velocityY;
 
-}
+        bird.y = Math.max(bird.y, 0);
 
-@Override
-public void actionPerformed(ActionEvent e) {
-    move();
-    repaint();
-    
-}
+        // pipe movement
 
-    
+        for (int i = 0; i < pipes.size(); i++) {
+            Pipe pipe = pipes.get(i);
+            pipe.x += velocityX;
+        }
+
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        move();
+        repaint();
+
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+            velocityY = -9;
+        }
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+
+    }
+
 }
